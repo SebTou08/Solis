@@ -49,7 +49,7 @@ import Dropdown from "primevue/dropdown";
 import PrimeVue from "primevue/config";
 import router from './router';
 import Chart from 'primevue/chart';
-
+import Carousel from 'primevue/carousel';
 
 
 const app = createApp(App);
@@ -80,5 +80,6 @@ app.component('SpeedDial', SpeedDial)
 app.component('Chart', Chart);
 app.component('VirtualScroller', VirtualScroller);
 app.component('Skeleton', Skeleton);
+app.component('Carousel', Carousel);
 
 app.mount("#app");

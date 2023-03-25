@@ -1,25 +1,26 @@
 <template>
     <div>
-        <div>
-            <div class="card flex justify-content-center">
+        <div class="gp">
+            <div class="card flex justify-content-center graph">
                 <Chart type="doughnut" :data="chartData" :options="chartOptions"
                     class="w-full md:w-30rem" />
             </div>
         </div>
-        <div >
+        <div>
             <div class="gallery">
-            <Card v-for="soli in allSolis" :key="soli.id">
-                <template #title> Solicitud de: {{ soli.sendBy?.name }} </template>
-                <template #content>
-                    <h4>{{ soli.tittle }}</h4>
-                   <h6>{{ soli.description }}</h6>
-                    <h6>Creado el: {{
-                        soli.date }}
-                    </h6>
-                </template>
+                <Card class="card" v-for="soli in arraySorted" :key="soli.id">
+                    <template #title> Solicitud de: {{ soli.sendBy?.name }}
+                    </template>
+                    <template #content>
+                        <h4>{{ soli.tittle }}</h4>
+                        <h6>{{ soli.description }}</h6>
+                        <h6>Creado el: {{
+                            soli.date }}
+                        </h6>
+                    </template>
 
 
-            </Card>
+                </Card>
             </div>
         </div>
     </div>
@@ -39,6 +40,16 @@ const chartOptions = ref({
 const allSolis: Array<ISolicitud> = reactive((await axios.get("https://60c255b2069afc0017f4a2ca.mockapi.io/trainings")).data);
 
 console.log(allSolis);
+
+
+function sortFunction(a: any, b: any) {
+    var dateA = new Date(a.dateB).getTime();
+    var dateB = new Date(b.date).getTime();
+    return dateA > dateB ? 1 : -1;
+};
+
+const arraySorted = allSolis.sort(sortFunction);
+console.log(arraySorted);
 
 const stNum = allSolis.filter(e => e.sendBy?.code == 'ST').length;
 const dmNum = allSolis.filter(e => e.sendBy?.code == 'DM').length;
@@ -63,11 +74,13 @@ console.log(chartData)
 </script>
 
 <style>
-.gallery{
+.gallery {
     display: grid;
-  gap: 1rem;
-  grid-auto-rows: 18rem;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr));
+    gap: 1rem;
+    grid-auto-rows: 18rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr));
 
 }
+
+
 </style>
