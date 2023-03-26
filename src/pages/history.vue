@@ -14,9 +14,7 @@
                     <template #content>
                         <h4>{{ soli.tittle }}</h4>
                         <h6>{{ soli.description }}</h6>
-                        <h6>Creado el: {{
-                            soli.date }}
-                        </h6>
+                   
                     </template>
 
 
@@ -78,7 +76,7 @@ console.log(chartData)
     display: grid;
     gap: 1rem;
     grid-auto-rows: 18rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 35rem), 1fr));
 
 }
 

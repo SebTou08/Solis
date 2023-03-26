@@ -1,35 +1,29 @@
 <template>
     <div>
+        <div v-if="isLoading">
+            <ProgressSpinner class="loading-spinner"
+                style="width: 5vw; height: 50px" strokeWidth="8"
+                fill="var(--surface-ground)" animationDuration=".5s" />
+        </div>
+
         <Toast />
-        <Card>
+        <Card v-if="!isLoading">
             <template #title> Nueva solicitud </template>
             <template #content>
-                <InputText
-                    type="text"
-                    v-model="solicitud.tittle"
-                    class="maz-width-ee"
-                    placeholder="Titulo"
-                />
+                <InputText type="text" v-model="solicitud.tittle"
+                    class="maz-width-ee" placeholder="Titulo" />
 
                 <br />
                 <br />
 
-                <Dropdown
-                    v-model="solicitud.sendBy"
-                    :options="people"
-                    optionLabel="name"
-                    placeholder="Creada por: "
-                    class="w-full md:w-14rem maz-width-ee"
-                />
+                <Dropdown v-model="solicitud.sendBy" :options="people"
+                    optionLabel="name" placeholder="Creada por: "
+                    class="w-full md:w-14rem maz-width-ee" />
                 <br />
                 <br />
                 <span class="p-float-label">
-                    <Textarea
-                        v-model="solicitud.description"
-                        rows="5"
-                        cols="30"
-                        class="maz-width"
-                    />
+                    <Textarea v-model="solicitud.description" rows="5" cols="30"
+                        class="maz-width" />
                 </span>
             </template>
             <template #footer>
@@ -37,33 +31,25 @@
             </template>
         </Card>
 
-        <Dialog
-            v-model:visible="visible"
-            modal
-            header="Solicitudes"
-            :style="{ width: '50vw' }"
-        >
+        <Dialog v-model:visible="visible" modal header="Solicitudes"
+            :style="{ width: '50vw' }" class="diallllog">
             <div class="group">
-                <div >
-                    <h6>La finalidad de las solicitudes es hacer que tu pareja pueda mejorar en cierto aspecto</h6>
-                    <h6>NO deberíamos ver una solicitud como algo que nos digusta, sino como algo que podría ser mejor </h6>
-                    <h6>NO queremos cambiar su forma de ser porque l@ amamos tal cual es</h6>
+                <div>
+                    <h6>La finalidad de las solicitudes es hacer que tu pareja pueda
+                        mejorar en cierto aspecto</h6>
+                    <h6>NO deberíamos ver una solicitud como algo que nos digusta,
+                        sino como algo que podría ser mejor </h6>
+                    <h6>NO queremos cambiar su forma de ser porque l@ amamos tal
+                        cual es</h6>
                     <img :src="word" alt="" class="img-fast" />
                 </div>
             </div>
             <template #footer>
-                <Button
-                    label="No, mejor me voy con Michael Jordan"
-                    icon="pi pi-times"
-                    @click="visible = false"
-                    text
-                />
+                <Button label="No, mejor me voy con Michael Jordan"
+                    icon="pi pi-times" @click="visible = false" text />
                 <Button
                     label="Si, acepto que quiero realizar esta solicitud y te sigo amando con la misma intensidad"
-                    icon="pi pi-check"
-                    @click="sendInfo"
-                    autofocus
-                />
+                    icon="pi pi-check" @click="sendInfo" autofocus />
             </template>
         </Dialog>
     </div>
@@ -76,41 +62,9 @@ import axios from "axios";
 import { useToast } from "primevue/usetoast";
 import { useIntervalFn } from "@vueuse/core";
 import { rand } from "@vueuse/shared";
+import { watch } from "fs";
 
-const products = ref([
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8DZUo6tLTiBpZLXzyxevJmGjKnKuoIVIeaY-5TpHToez6iLOPWJ2pqZY0dIkZjvzIth9YMTnfjVco6hwvG6Cegm2vyqLz05PIZct_B4LTrH5wPEyWd5K5opPSH55y4cZbKWL1nvNkJuiHUmZyVri1-wEg=w721-h961-no?authuser=0",
-    },
-    {
-        image: "https://photos.google.com/share/AF1QipNFrG4D1xUQE3GFniEWcUiz3Og_D1hojX8y19OYYGifW0Z_TlgVMnUxI8CtD5lnUQ/photo/AF1QipMmWmIvbuCCly3ga8MnOnkFIUO1MKXOR-1xMvt3?key=WVd5UFVfeTh1Ym5SMVZaSDhkbFgweXlIX3pTYzZB",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8B-xlrCgjUa40Ip2D8rfqT4WgSothzGhq9TZY6LFDe0cIMbpYVyL59G_CCQmI0EXvrWTIsfTqtosHiuulC0IZlHoRx3Tox6aNOM09_EdVznxPhXfPkERRMD-xucV3mkxpLNG6QozusfukJC3jvQae1r-A=w721-h961-no?authuser=0",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8DQgUYHkzFWzgX8_sT5ABwftAjn5QK-tw_JM6cj328cS9fttgRzDLBiXj-ZI00TgsyzLExYodbAO3muSAsNia5Q8Qy0WpozmGNam03CH35kq6HVIYxeMzOx3xWvkguLr5IXcnQtmrQoHk_ENBT0Wn2D1w=w769-h962-no?authuser=0",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8B4NigCCy1gjdajjJp2TA6iWWM2GDQZfesoVihkaTie53BRiVeCVVt5TIE-_Q0cOuq5J4SlWr7bfJAeyf4LJNFaIjWJOQPjxJ3A5TfztY9ARIGKbmY8gobsorEJzJXsWoTmJ_Kn94-J38Zi_eBPFIAN0w=w721-h961-no?authuser=0",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8ByKgq2OsvoLkeLMU9nCkVXi3GXVU5IcMCAQoH2ZDew3Xb0a8wPqNR7VztVQ9BmsCmYZEFr827H8ZHUqEjf9ydKkJI-T15cwSIIM7lVmDKDudwXbkhb1I10AbJgNOkhb2Q_fcJT5IDWA-BMg3MVW4mkHw=w770-h961-no?authuser=0",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8CJNZ2gK6z56Q6ydGBkKayggda2RF6qkxF9MpL4lQJp0ufclqZlzRkfz3qNSFWhXqJMRa6-Gz4yY1IW13FgOL065Mh8B0cTk6yTBqTIju0u9q1zkn7lKrmQ_gwAzlxf594JTOGVt5R3fBL_d7WO6-FmKw=w775-h961-no?authuser=0",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8DrKKTkG-AA3_tpKPLmwfLbg2Sr5Jm6OgmFPy0pNznXXX6gMaQ3zb7Wua6EnGgWfujAZyO9MmydkYQ8fpt7wSLBhHmQkdFoPhVNQ363cui6Xbjc_8eMZqz6VNvj60UQM5miWqvFlheNURmw3iRmXXL6Gw=w721-h961-no?authuser=0",
-    },
-    {
-        image: "https://lh3.googleusercontent.com/pw/AMWts8CJFbV0vCBc9RSMO8T_OQyUq7tBXZpTjeGRkLTd5eYNk-7yyjyhJ7ddwjdK7wRqydnxoexa5OkkVsNRP_S7O4nFjbbY5l5zbmYmVh91d2ma_-pro8MOJ4Rj3CFLiI3aLDsMLJDaq5hhAlMp0RNROvvsJw=w718-h961-no?authuser=0",
-    },
-    // { image: '' },
-    // { image: '' },
-    // { image: '' },
-    // { image: '' },
-    // { image: '' },
-]);
+
 
 const responsiveOptions = ref([
     {
@@ -139,12 +93,13 @@ const people = [
     { name: "El Sebas", code: "ST" },
 ];
 
-const openDialog = () => { 
+const openDialog = () => {
     visible.value = true;
 }
 
-const sendInfo = async () => {   
+const sendInfo = async () => {
     visible.value = false;
+    isLoading.value = true;
     solicitud.date = new Date();
     const response = await axios.post('https://60c255b2069afc0017f4a2ca.mockapi.io/trainings', solicitud);
     console.log({ response })
@@ -156,9 +111,11 @@ const sendInfo = async () => {
         solicitud.tittle = undefined;
         solicitud.sendBy = undefined;
         solicitud.description = undefined;
-
+        isLoading.value = false;
     }
 };
+
+const isLoading = ref(false);
 
 const greetings = [
     "https://lh3.googleusercontent.com/pw/AMWts8DZUo6tLTiBpZLXzyxevJmGjKnKuoIVIeaY-5TpHToez6iLOPWJ2pqZY0dIkZjvzIth9YMTnfjVco6hwvG6Cegm2vyqLz05PIZct_B4LTrH5wPEyWd5K5opPSH55y4cZbKWL1nvNkJuiHUmZyVri1-wEg=w721-h961-no?authuser=0",
@@ -177,11 +134,19 @@ const greetings = [
     "https://lh3.googleusercontent.com/pw/AMWts8BW2DJUNqVJDKM3keNh_WH-LOT5LF3C2G1mAX_vvw6Gb1kUmgmovaKJN6IacgGo05GwjSk7kstCJJLqBFOg05whJedRglBZ4v9x8VR0DPuI0rHRvT0kTCZbmQn3jyS5_cpGZemX2aRiE8zy1zheo---XA=w721-h961-no?authuser=0",
     "https://lh3.googleusercontent.com/pw/AMWts8CWZsV6yyELcYEZXVJgk1aBmGPs18kK7PIQfmR5bpBjBP0IFNOsJ1JgXoegt_U_lL5FvLH6d8y0z4iy1QfQE8KhSrUEyiuOpRZDol_3jHLrWZ9SOdES1d_nZKPVZh65pmghpNaNC-oYY5udjVfJ9vNReQ=w721-h961-no?authuser=0"
 ];
-const word = ref("Hello");
+const word = ref("../assets/1.jpg");
 const interval = ref(150);
 const { pause, resume, isActive } = useIntervalFn(() => {
     word.value = greetings[rand(0, greetings.length - 1)];
 }, interval);
+
+resume;
+
+setTimeout(() => {
+    pause;
+}, 2000);
+
+
 </script>
 
 <style>
@@ -200,7 +165,32 @@ const { pause, resume, isActive } = useIntervalFn(() => {
 }
 
 
-.img-fast{
-    max-height: 40vh;
+
+
+.loading-spinner {
+    position: absolute;
+    top: 15vh;
+    left: 45vw;
 }
+
+@media (max-width: 768px) {
+    .diallllog {
+        width: 94vw !important;
+        position: absolute;
+        left: 3vw;
+    }
+
+    .img-fast {
+        max-height: 300px !important;
+    }
+}
+
+@media (min-width: 769px) {
+
+    .img-fast {
+        max-height: 45vh !important;
+    }
+}
+
+
 </style>
