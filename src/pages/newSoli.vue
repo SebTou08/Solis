@@ -10,6 +10,9 @@
         <Card v-if="!isLoading">
             <template #title> Nueva solicitud </template>
             <template #content>
+                <div style="display: none;">
+                    <img :src="word" alt="">
+                </div>
                 <InputText type="text" v-model="solicitud.tittle"
                     class="maz-width-ee" placeholder="Titulo" />
 
